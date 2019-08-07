@@ -126,6 +126,11 @@
     right: 0;
     top: 0;
     bottom: 0;
+    & /deep/ .leaflet-tile-pane {
+        .leaflet-tile {
+            filter: grayscale(40%);
+        }
+    }
 }
 .shop-marker {
     border: 3px solid transparent;

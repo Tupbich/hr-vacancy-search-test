@@ -25,11 +25,16 @@ export class MetroLine {
     Stations: MetroStation[] = [];
 
     constructor(init?: Partial<MetroLine>) {
+        Object.assign(this, init);
     }
 };
 
 export class MetroStation extends SearchLocation {
-
+    Line!: MetroLine;
+    constructor(init?: Partial<MetroStation>) {
+        super();
+        Object.assign(this, init);
+    }
 };
 
 const getAddressSuggestions = async (input: string): Promise<string[]> => {
@@ -53,17 +58,20 @@ const getMetroLines = async (nearPoint: ICoordinate, radius: number): Promise<Me
     const lines = await api.getMetroLines({ bounds: [[nw.lat, nw.lng], [se.lat, se.lng]] });
 
     const result = lines.map((l: any) => {
+        const line = new MetroLine({
+            Name: l.name,
+            Color: l.hex_color
+        });
+
         const stations = l.stations.map((s: any) =>
             new MetroStation({
                 Name: s.name,
-                Coordinates: { Lat: s.lat, Lon: s.lng }
-            }))
+                Coordinates: { Lat: s.lat, Lon: s.lng },
+                Line: line
+            }));
 
-        return new MetroLine({
-            Name: l.name,
-            Color: l.hex_color,
-            Stations: stations
-        })
+        line.Stations = stations;
+        return line;
     });
 
     return result;

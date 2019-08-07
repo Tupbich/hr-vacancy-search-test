@@ -28,36 +28,19 @@
                         </q-list>
                     </q-scroll-area>
                 </div>
+                <div class="col-auto">
+                    center:{{center}}
+                    zoom:{{zoom}}
+                </div>
             </div>
 
-            <!-- <div class="col">
-                <div class="col-xs-1">
-                    <q-select v-model="selectedProfessions" :options="professions" multiple filled use-chips dense
-                              label="выберите профессию"  />
-                </div>
-
-                <div class="col-xs-12" style="background-color:red">
-                    Hi!
-                     <q-list separator>
-                    <q-item clickable v-ripple v-for="s in shops" :key="s.Id" @click="onShopClick(s)"
-                            @mouseenter="focusedShop=s" @mouseleave="focusedShop=null" :active="focusedShop==s">
-                        <q-item-section>
-                            <q-item-label>{{s.Address}}</q-item-label>
-                        </q-item-section>
-                        <q-item-section side>
-                            <q-badge dense color="grey">{{s.vacancies.length}}</q-badge>
-                        </q-item-section>
-                    </q-item>
-                </q-list> 
-                </div>
-
-            </div> -->
         </q-drawer>
 
         <q-page-container>
             <q-page class="flex flex-center map-wrapper">
-                <l-map class="map" :zoom="zoom" :center="center" ref="map" :min-zoom="6" @ready="onMapInit"
-                       @update:bounds="boundsUpdated" @update:zoom="zoomUpdated" @update:center="centerUpdated">
+                <l-map class="map" ref="map" :zoom="zoom" :center="center" :min-zoom="6" @ready="onMapInit"
+                       @update:bounds="boundsUpdated" @update:zoom="zoomUpdated" @update:center="centerUpdated"
+                       :options="{wheelPxPerZoomLevel:120}">
                     <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
 
                     <l-marker v-if="focusedShop" :lat-lng="[focusedShop.Lat, focusedShop.Lon]">
@@ -99,21 +82,27 @@
 
                     <template v-if="metroLines && zoom > 10">
                         <l-polyline v-for="m in metroLines" :key="m.id" :lat-lngs="m.points" :color="'#'+m.hex_color"
-                                    :smooth-factor="0.5" :weight="6" :opacity="0.75">
+                                    :smooth-factor="0.5" :weight="6" :opacity="0.65" @click="onMetroLineClick(m)">
                             <l-tooltip :options="{sticky:true}">
                                 <div>линия: {{m.name}}</div>
                             </l-tooltip>
                         </l-polyline>
 
                         <template v-for="m in metroLines">
-                            <l-marker v-for="s in m.stations" :key="s.id" :lat-lng="[s.lat, s.lng]">
+                            <l-circle-marker v-for="s in m.stations" :key="s.id" :lat-lng="[s.lat, s.lng]"
+                                             :radius="zoom > 12 ? 6:3" :fill="true" :color="'#'+m.hex_color"
+                                             :fill-color="'#'+m.hex_color" :fill-opacity=".7"
+                                             @click="onMetroStationClick(s,m)">
                                 <l-tooltip>
                                     <div>станция: {{s.name}}</div>
                                 </l-tooltip>
+                            </l-circle-marker>
+                            <!-- <l-marker>
+                                
                                 <l-icon>
                                     <q-icon :style="{color:'#'+m.hex_color}" size="16px" name="directions_subway" />
                                 </l-icon>
-                            </l-marker>
+                            </l-marker> -->
                         </template>
 
                     </template>

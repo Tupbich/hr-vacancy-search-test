@@ -1,5 +1,5 @@
 import { Vue, Component, Prop, Emit, Watch } from "vue-property-decorator";
-import { LMap, LTileLayer, LMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline } from 'vue2-leaflet';
+import { LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline } from 'vue2-leaflet';
 import { Icon, Map, LatLngBounds, LatLngBoundsExpression, Polygon, Circle } from 'leaflet';
 import { Notify } from 'quasar'
 import { getProfessions, getShopVacancies, getMetroLines } from '@/api';
@@ -18,7 +18,7 @@ Icon.Default.mergeOptions({
 });
 
 
-const components = { AddressSearch, LMap, LTileLayer, LMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster }
+const components = { AddressSearch, LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster }
 @Component({ components })
 export default class MapComponent extends Vue {
     zoom = 13;
@@ -67,8 +67,13 @@ export default class MapComponent extends Vue {
         this.setMapView(coord);
     }
 
+    onMetroStationClick(station: any, line: any) {
+        console.log(station);
+    }
 
-
+    onMetroLineClick(line: any) {
+        console.log(line);
+    }
 
     @Watch('bounds', { immediate: true })
     @Watch('selectedProfessions', { immediate: false })

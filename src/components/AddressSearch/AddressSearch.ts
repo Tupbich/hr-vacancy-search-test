@@ -3,13 +3,19 @@ import { getSuggestions, getCoords } from '../../api';
 
 @Component
 export default class AddressSearchComponent extends Vue {
+    location: [number, number] | null = null;
     addressList: string[] = [];
     selectedAddress: any = null;
     suggestions: any[] = [];
 
-    async onTyping(val: string, upd: Function, abort: Function) {
+    get select() {
+        return this.$refs.select as any;
+    }
 
-        if (val == '' && this.selectedAddress) {
+    async onTyping(val: string, upd: Function, abort: Function) {
+        const selectInputValue = this.select.inputValue;
+
+        if (selectInputValue == '' && this.selectedAddress) {
             this.clear();
         };
 
@@ -26,8 +32,7 @@ export default class AddressSearchComponent extends Vue {
 
     clear() {
         this.selectedAddress = null;
-        const select = this.$refs.select as any;
-        select.updateInputValue('', false);
+        this.select.updateInputValue('', false);
     }
 
     @Watch('selectedAddress')

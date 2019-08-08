@@ -72,10 +72,10 @@
                         </template>
                     </l-marker-cluster>
 
-                    <!-- <template v-if="searchLocation && searchLocation.Kind='IAddress'">
+                    <template v-if="searchLocation && searchLocation.Kind=='IAddress'">
                         <AddressMarker :address="searchLocation" :radius="searchRadius" />
                     </template>
-
+                    <!-- 
                     <template v-if="addressCircle">
                         <l-circle :lat-lng="addressCircle.latlng" color="" fill-color="#42A5F5"
                                   :radius="addressCircle.radius" />

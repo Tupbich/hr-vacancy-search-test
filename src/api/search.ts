@@ -50,6 +50,7 @@ export async function getAddress(address: string): Promise<IAddress> {
     const details = res.data.suggestions[0];
 
     return {
+        Kind: "IAddress",
         Name: details.unrestricted_value,
         ShortName: details.value,
         GeoPoint: { Lat: details.data.geo_lat * 1, Lon: details.data.geo_lon * 1 }

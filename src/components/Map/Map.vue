@@ -3,7 +3,9 @@
     <q-layout view="lHh Lpr lFf">
         <q-header elevated>
             <q-toolbar>
-                <AddressSearch style="width:100%;" @selected="onAddressSelect" />
+                <Search style="width:100%;" @selected="onAddressSelect" :point="center" />
+
+                <!-- <AddressSearch style="width:100%;" @selected="onAddressSelect" /> -->
             </q-toolbar>
         </q-header>
 

@@ -1,6 +1,7 @@
 import axios from "axios";
-import allShops from './shops';
-import metro from './metro_stations';
+import allShops from './data_mock/shops';
+import metro from './data_mock/metro_stations';
+import { isPointWithinRadius } from 'geolib';
 
 import { Bounds } from 'leaflet';
 
@@ -69,8 +70,10 @@ export async function getShopVacancies(search: { bounds: [[number, number], [num
 
 const allLines = metro.reduce((lines, curr: any) => lines.concat(curr.lines), []);
 
-export async function getMetroLines(search: { bounds: [[number, number], [number, number]], professions?: string[] }) {
-    const bounds = new Bounds(search.bounds);
-    const lines = allLines.filter((l: any) => l.stations.some((st: any) => bounds.contains([st.lat, st.lng])));
+export async function getMetroLines(search: { center: [number, number], radius: number, name?: string }) {
+
+    let lines = allLines.filter((l: any) => l.stations.some((st: any) =>
+        isPointWithinRadius([st.lat, st.lng], search.center, search.radius)));
+
     return lines;
 }

@@ -1,5 +1,8 @@
 {
     "workbench.tree.indent": 22,
+    "editor.fontSize": 14,
+    "editor.fontFamily": "Fira Code",
+    "editor.fontLigatures": true,
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,

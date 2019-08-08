@@ -4,6 +4,8 @@ import { Icon, Map, LatLngBounds, LatLngBoundsExpression, Polygon, Circle } from
 import { Notify } from 'quasar'
 import { getProfessions, getShopVacancies, getMetroLines } from '@/api';
 import AddressSearch from "../AddressSearch/AddressSearch.vue";
+import Search from "../Search2/Search.vue";
+
 const LMarkerCluster = require('vue2-leaflet-markercluster');
 
 import 'leaflet/dist/leaflet.css';
@@ -18,11 +20,12 @@ Icon.Default.mergeOptions({
 });
 
 
-const components = { AddressSearch, LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster }
+const components = { AddressSearch, Search, LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster };
+
 @Component({ components })
 export default class MapComponent extends Vue {
     zoom = 13;
-    center: any = [55.7943584, 49.1114975];
+    center: any = { lat: 59.93085, lng: 30.366211 };
     bounds: LatLngBounds | null = null;
 
     professions: any[] = [];
@@ -45,18 +48,19 @@ export default class MapComponent extends Vue {
     }
 
     onAddressSelect(address: any) {
+
         this.addressCircle = null;
 
         if (address == null) {
             return;
         }
 
-        if (!address.coord) {
+        if (!address.GeoPoint) {
             Notify.create('Не удалось определить координаты для указанного адреса, попробуйте ввести другой');
             return;
         }
 
-        const coord = [address.coord.lat, address.coord.lon] as [number, number];
+        const coord = [address.GeoPoint.Lat, address.GeoPoint.Lon] as [number, number];
         this.addressCircle = { latlng: coord, radius: 2000 };
         this.setMapView(coord);
 
@@ -93,12 +97,12 @@ export default class MapComponent extends Vue {
 
     @Watch('bounds', { immediate: true })
     async fetchMetroStations() {
-        if (this.bounds == null) return;
-        const nw = this.bounds.getNorthWest();
-        const se = this.bounds.getSouthEast();
-        const lines = await getMetroLines({ bounds: [[nw.lat, nw.lng], [se.lat, se.lng]] });
-        lines.forEach((l: any) => l.points = l.stations.map((st: any) => ([st.lat, st.lng])));
-        this.metroLines = lines;
+        //if (this.bounds == null) return;
+        //const nw = this.bounds.getNorthWest();
+        //const se = this.bounds.getSouthEast();
+        //const lines = await getMetroLines({ bounds: [[nw.lat, nw.lng], [se.lat, se.lng]] });
+        //lines.forEach((l: any) => l.points = l.stations.map((st: any) => ([st.lat, st.lng])));
+        //this.metroLines = lines;
     }
 
     onMapInit() {

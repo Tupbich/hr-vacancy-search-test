@@ -1,6 +1,5 @@
 import { Vue, Component, Prop, Emit, Watch } from "vue-property-decorator";
 import { getSuggestions, getCoords } from '../../api';
-import geo, { Address, MetroLine, MetroStation } from '@/services/GeoService';
 
 @Component
 export default class AddressSearchComponent extends Vue {

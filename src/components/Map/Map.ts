@@ -4,13 +4,15 @@ import { Icon, Map, LatLngBounds, LatLngBoundsExpression, Polygon, Circle } from
 import { Notify } from 'quasar'
 import { getProfessions, getShopVacancies, getMetroLines } from '@/api';
 import AddressSearch from "../AddressSearch/AddressSearch.vue";
-import Search from "../Search2/Search.vue";
+import Search, { SearchLocation } from "../Search2/";
+import AddressMarker from './components/AddressMarker';
 
 const LMarkerCluster = require('vue2-leaflet-markercluster');
 
 import 'leaflet/dist/leaflet.css';
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import { IMetroLine } from '@/models';
 
 delete (Icon.Default.prototype as any)._getIconUrl;
 Icon.Default.mergeOptions({
@@ -20,7 +22,7 @@ Icon.Default.mergeOptions({
 });
 
 
-const components = { AddressSearch, Search, LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster };
+const components = { AddressSearch, AddressMarker, Search, LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster };
 
 @Component({ components })
 export default class MapComponent extends Vue {
@@ -35,7 +37,11 @@ export default class MapComponent extends Vue {
     focusedShop: any = null;
 
     addressCircle: any = null;
-    metroLines: any[] = [];
+
+    searchRadius = 2000;
+    searchLocation: SearchLocation = null;
+
+    metroLines: IMetroLine[] = [];
 
 
     async created() {
@@ -45,6 +51,16 @@ export default class MapComponent extends Vue {
     get map() {
         const map = (this.$refs.map as any).mapObject;
         return map as Map
+    }
+
+
+    onSearchSelect(input: SearchLocation) {
+    console.log("TCL: MapComponent -> onSearchSelect -> input", input)
+        
+        if (input && input.Kind == 'IAddress') {
+            this.setMapView([input.GeoPoint.Lat, input.GeoPoint.Lon]);
+        }
+        this.searchLocation = input;
     }
 
     onAddressSelect(address: any) {
@@ -97,7 +113,7 @@ export default class MapComponent extends Vue {
 
     @Watch('bounds', { immediate: true })
     async fetchMetroStations() {
-        //if (this.bounds == null) return;
+        if (this.bounds == null) return;
         //const nw = this.bounds.getNorthWest();
         //const se = this.bounds.getSouthEast();
         //const lines = await getMetroLines({ bounds: [[nw.lat, nw.lng], [se.lat, se.lng]] });

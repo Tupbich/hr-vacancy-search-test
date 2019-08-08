@@ -3,7 +3,7 @@
     <q-layout view="lHh Lpr lFf">
         <q-header elevated>
             <q-toolbar>
-                <Search style="width:100%;" @selected="onAddressSelect" :point="center" />
+                <Search style="width:100%;" @selected="onSearchSelect" :point="center" />
 
                 <!-- <AddressSearch style="width:100%;" @selected="onAddressSelect" /> -->
             </q-toolbar>
@@ -72,6 +72,10 @@
                         </template>
                     </l-marker-cluster>
 
+                    <!-- <template v-if="searchLocation && searchLocation.Kind='IAddress'">
+                        <AddressMarker :address="searchLocation" :radius="searchRadius" />
+                    </template>
+
                     <template v-if="addressCircle">
                         <l-circle :lat-lng="addressCircle.latlng" color="" fill-color="#42A5F5"
                                   :radius="addressCircle.radius" />
@@ -99,15 +103,9 @@
                                     <div>станция: {{s.name}}</div>
                                 </l-tooltip>
                             </l-circle-marker>
-                            <!-- <l-marker>
-                                
-                                <l-icon>
-                                    <q-icon :style="{color:'#'+m.hex_color}" size="16px" name="directions_subway" />
-                                </l-icon>
-                            </l-marker> -->
                         </template>
 
-                    </template>
+                    </template> -->
 
                 </l-map>
             </q-page>

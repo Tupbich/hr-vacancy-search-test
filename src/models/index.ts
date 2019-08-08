@@ -22,17 +22,20 @@ export interface IAddressSuggestion {
 }
 
 export interface IAddress extends IHasGeo {
+    Kind: "IAddress",
     Name: string;
     ShortName: string;
 }
 
 export interface IMetroLine {
+    Kind: "IMetroLine",
     Name: string;
     HexColor: string;
     Stations: IMetroStation[];
 }
 
 export interface IMetroStation extends IHasGeo {
+    Kind: "IMetroStation",
     Name: string;
     Line: IMetroLine
 }

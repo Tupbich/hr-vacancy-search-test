@@ -1,6 +1,6 @@
 <template>
     <div>
-        <q-input filled square dark dense standout="bg-primary text-white" v-model="input" debounce="500"
+        <q-input filled square dark dense standout="bg-primary text-white" v-model="input" :debounce="debounce"
                  @input="onInput" spellcheck="false" @focus="onFocus" @blur="onBlur" @click="onClick"
                  @keyup.esc="reset">
             <template v-slot:prepend>

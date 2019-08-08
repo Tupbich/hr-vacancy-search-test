@@ -3,7 +3,7 @@ import * as api from '@/api/search';
 import { IAddress, IMetroLine, IMetroStation, IAddressSuggestion } from '@/models';
 import { QMenu } from 'quasar';
 
-export type SelectedEvent = IAddress | IMetroLine | IMetroStation | null;
+export type SearchLocation = IAddress | IMetroLine | IMetroStation | null;
 declare type Suggestion = { text: string, obj: any, childs?: Suggestion[] };
 
 declare type SuggestionMode = 'address' | 'metro';
@@ -22,6 +22,7 @@ export default class SearchComponent extends Vue {
     private suggestions: Suggestion[] = [];
     private loading = false;
     private stopFilter = false;
+    private debounce = 0;
 
     get modeIcon() {
         if (!this.mode) return 'search';
@@ -44,6 +45,7 @@ export default class SearchComponent extends Vue {
 
         if (this.mode != modeDef.mode) {
             this.mode = modeDef.mode;
+            this.debounce = 500;
         }
 
         if (modeDef.input.length < 3) return;
@@ -88,6 +90,7 @@ export default class SearchComponent extends Vue {
 
     reset() {
         this.mode = null;
+        this.debounce = 0;
         this.input = '';
         this.suggestions = [];
         this.stopFilter = false;
@@ -102,8 +105,8 @@ export default class SearchComponent extends Vue {
     }
 
     async updateSuggestions(input: string) {
-        this.loading = true;
 
+        this.loading = true;
         let suggestions: Suggestion[] = [];
         try {
             if (this.mode == 'address') {

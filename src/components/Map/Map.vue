@@ -4,8 +4,6 @@
         <q-header elevated>
             <q-toolbar>
                 <Search style="width:100%;" @selected="onSearchSelect" :point="center" />
-
-                <!-- <AddressSearch style="width:100%;" @selected="onAddressSelect" /> -->
             </q-toolbar>
         </q-header>
 
@@ -17,26 +15,18 @@
                 </div>
                 <div class="col" style="overflow:auto">
                     <q-scroll-area style="height:100%">
-                        <q-list separator>
-                            <q-item clickable v-ripple v-for="s in shops" :key="s.Id"
-                                    @click="onShopClick(s)" @mouseenter="focusedShop=s"
-                                    @mouseleave="focusedShop=null" :active="focusedShop==s">
-                                <q-item-section>
-                                    <q-item-label>{{s.Address}}</q-item-label>
-                                </q-item-section>
-                                <q-item-section side>
-                                    <q-badge dense color="grey">{{s.vacancies.length}}</q-badge>
-                                </q-item-section>
-                            </q-item>
-                        </q-list>
+                        <VacancyList :vacancies="shops" :location="searchLocation"
+                                     :radius="searchRadius" @shop:click="onShopClick"
+                                     @shop:mouseenter="focusedShop=$event"
+                                     @shop:mouseleave="focusedShop=null" />
                     </q-scroll-area>
                 </div>
-                <div class="col-auto">
-                    center:{{center}}
-                    zoom:{{zoom}}
-                    <div>
-                        search:{{searchLocation?searchLocation.Kind:'none'}}
-                    </div>
+
+                <div class="col-auto q-px-lg">
+                    <q-badge color="primary">
+                        радиус поиска {{ searchRadius }} метров
+                    </q-badge>
+                    <q-slider v-model="searchRadius" :min="500" :max="1500" :step="100" />
                 </div>
             </div>
 
@@ -81,46 +71,12 @@
                         <AddressMarker v-if="searchLocation && searchLocation.Kind=='IAddress'"
                                        :address="searchLocation" :radius="searchRadius" />
 
-                        <MetroLineMarker v-if="searchLocation && searchLocation.Kind=='IMetroLine'"
-                                         :metroLine="searchLocation" />
-
                         <template v-if="metroLines">
                             <MetroLineMarker v-for="m in metroLines" :key="m.Name" :metroLine="m"
-                                             :opacity="0.5" />
+                                             @click="onMetroClick" :opacity="isActiveMetro(m)?1:.5"
+                                             :radius="searchRadius" :active="isActiveMetro(m)" />
                         </template>
                     </template>
-
-                    <!-- 
-                    <template v-if="addressCircle">
-                        <l-circle :lat-lng="addressCircle.latlng" color="" fill-color="#42A5F5"
-                                  :radius="addressCircle.radius" />
-                        <l-marker :lat-lng="addressCircle.latlng">
-                            <l-icon>
-                                <q-icon color="primary" size="12px" name="my_location" />
-                            </l-icon>
-                        </l-marker>
-                    </template>
-
-                    <template v-if="metroLines && zoom > 10">
-                        <l-polyline v-for="m in metroLines" :key="m.id" :lat-lngs="m.points" :color="'#'+m.hex_color"
-                                    :smooth-factor="0.5" :weight="6" :opacity="0.65" @click="onMetroLineClick(m)">
-                            <l-tooltip :options="{sticky:true}">
-                                <div>линия: {{m.name}}</div>
-                            </l-tooltip>
-                        </l-polyline>
-
-                        <template v-for="m in metroLines">
-                            <l-circle-marker v-for="s in m.stations" :key="s.id" :lat-lng="[s.lat, s.lng]"
-                                             :radius="zoom > 12 ? 6:3" :fill="true" :color="'#'+m.hex_color"
-                                             :fill-color="'#'+m.hex_color" :fill-opacity=".7"
-                                             @click="onMetroStationClick(s,m)">
-                                <l-tooltip>
-                                    <div>станция: {{s.name}}</div>
-                                </l-tooltip>
-                            </l-circle-marker>
-                        </template>
-
-                    </template> -->
 
                 </l-map>
             </q-page>

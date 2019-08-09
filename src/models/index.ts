@@ -7,7 +7,8 @@ export interface IHasGeo {
     GeoPoint: IGeoPoint;
 }
 
-export interface IShopVacancies extends IHasGeo {
+export interface IShopVacancy extends IHasGeo {
+    Id: number;
     Address: string;
     Vacancies: IVacancy[];
 }

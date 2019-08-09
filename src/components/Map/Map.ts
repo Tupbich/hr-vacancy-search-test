@@ -1,15 +1,13 @@
 import { Vue, Component, Prop, Emit, Watch } from "vue-property-decorator";
 import { LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline } from 'vue2-leaflet';
 import { Icon, Map, LatLngBounds, LatLngBoundsExpression, Polygon, Circle, LatLng, LatLngExpression } from 'leaflet';
-import { Notify } from 'quasar'
 import { getProfessions, getShopVacancies } from '@/api';
 import { getMetroLines } from '@/api/search';
-import { getBounds, getCenter } from 'geolib';
-
-import AddressSearch from "../AddressSearch/AddressSearch.vue";
-import Search, { SearchLocation } from "../Search2/";
+import { getBounds, getCenter, getBoundsOfDistance } from 'geolib';
+import Search, { SearchLocation } from "../LocationSearch";
 import AddressMarker from './components/AddressMarker';
 import MetroLineMarker from './components/MetroLineMarker';
+import VacancyList from '../VacancySearch/VacancyList';
 
 
 const LMarkerCluster = require('vue2-leaflet-markercluster');
@@ -17,7 +15,7 @@ const LMarkerCluster = require('vue2-leaflet-markercluster');
 import 'leaflet/dist/leaflet.css';
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import { IMetroLine } from '@/models';
+import { IMetroLine, IMetroStation, IShopVacancy } from '@/models';
 
 delete (Icon.Default.prototype as any)._getIconUrl;
 Icon.Default.mergeOptions({
@@ -28,8 +26,8 @@ Icon.Default.mergeOptions({
 
 
 const components = {
-    AddressSearch, AddressMarker, MetroLineMarker,
-    Search, LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster
+    Search, VacancyList, AddressMarker, MetroLineMarker,
+    LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster
 };
 
 @Component({ components })
@@ -46,7 +44,7 @@ export default class MapComponent extends Vue {
 
     addressCircle: any = null;
 
-    searchRadius = 2000;
+    searchRadius = 1000;
     searchLocation: SearchLocation = null;
 
     metroLines: IMetroLine[] = [];
@@ -61,6 +59,14 @@ export default class MapComponent extends Vue {
         return map as Map
     }
 
+    get fetchBounds(): LatLngBounds | null {
+        if (!this.bounds) return null;
+        //const b = getBoundsOfDistance({ lat: this.center.lat, lon: this.center.lng }, 30000);
+        //const sw = [b[0].latitude, b[0].longitude] as [number, number];
+        //const ne = [b[1].latitude, b[1].longitude] as [number, number];
+
+        return this.bounds.pad(5);
+    }
 
     onSearchSelect(input: SearchLocation) {
         this.searchLocation = input;
@@ -87,58 +93,50 @@ export default class MapComponent extends Vue {
 
     }
 
-    onAddressSelect(address: any) {
+    onShopClick(shop: IShopVacancy) {
+        console.log("TCL: MapComponent -> onShopClick -> shop", shop)
 
-        this.addressCircle = null;
-
-        if (address == null) {
-            return;
-        }
-
-        if (!address.GeoPoint) {
-            Notify.create('Не удалось определить координаты для указанного адреса, попробуйте ввести другой');
-            return;
-        }
-
-        const coord = [address.GeoPoint.Lat, address.GeoPoint.Lon] as [number, number];
-        this.addressCircle = { latlng: coord, radius: 2000 };
-        this.setMapView({ center: coord });
-
+        this.setMapView({ center: [shop.GeoPoint.Lat, shop.GeoPoint.Lon] });
     }
 
-    onShopClick(shop: any) {
-        this.setMapView({ center: [shop.Lat, shop.Lon] });
+    onMetroClick(m: IMetroLine | IMetroStation) {
+        this.onSearchSelect(m)
     }
 
-    onMetroStationClick(station: any, line: any) {
-        console.log(station);
-    }
 
-    onMetroLineClick(line: any) {
-        console.log(line);
-    }
-
-    @Watch('bounds', { immediate: true })
+    @Watch('fetchBounds', { immediate: true })
     @Watch('selectedProfessions', { immediate: false })
     async fetchVacancies() {
-        if (this.bounds == null) return;
-        const nw = this.bounds.getNorthWest();
-        const se = this.bounds.getSouthEast();
+
+        let bounds = this.fetchBounds;
+        if (bounds == null) return;
+
+        
+        const nw = bounds.getNorthWest();
+        const se = bounds.getSouthEast();
+
         let shops = await getShopVacancies({
             bounds: [[nw.lat, nw.lng], [se.lat, se.lng]],
             professions: this.selectedProfessions
         });
 
-        const center = this.bounds.getCenter();
-        shops = shops.sort((a, b) => center.distanceTo([a.Lat, a.Lon]) - center.distanceTo([b.Lat, b.Lon]));
+        //const center = this.bounds.getCenter();
+        //shops = shops.sort((a, b) => center.distanceTo([a.Lat, a.Lon]) - center.distanceTo([b.Lat, b.Lon]));
         this.shops = shops;
     }
 
-    @Watch('bounds', { immediate: true })
+    @Watch('fetchBounds', { immediate: true })
     async fetchMetroStations() {
-        if (this.bounds == null) return;
-        const lines = await getMetroLines({ Lat: this.center.lat, Lon: this.center.lng }, 20000);
+        if (this.fetchBounds == null) return;
+        const lines = await getMetroLines({ Lat: this.center.lat, Lon: this.center.lng }, 50000);
         this.metroLines = lines;
+    }
+
+    isActiveMetro(m: IMetroLine) {
+        const loc = this.searchLocation;
+        if (!loc) return false;
+        if (loc.Kind == 'IMetroLine') return loc.Name == m.Name;
+        if (loc.Kind == 'IMetroStation') return loc.Line.Name == m.Name;
     }
 
     onMapInit() {

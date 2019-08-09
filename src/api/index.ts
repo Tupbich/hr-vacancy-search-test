@@ -64,6 +64,11 @@ export async function getShopVacancies(search: { bounds: [[number, number], [num
     }
 
     shops = shops.filter(s => bounds.contains([s.Lat, s.Lon]));
+    shops.forEach(s => {
+        s.Vacancies = s.vacancies;
+        s.GeoPoint = { Lat: s.Lat, Lon: s.Lon };
+    })
+
     return shops;
 }
 

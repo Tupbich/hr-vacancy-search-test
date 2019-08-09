@@ -12,14 +12,15 @@
         <q-drawer :value="true" side="left" :width="350" bordered content-class="q-pa-xs">
             <div class="column" style="height: 100%">
                 <div class="col-auto">
-                    <q-select v-model="selectedProfessions" :options="professions" multiple filled use-chips dense
-                              label="выберите профессию" />
+                    <q-select v-model="selectedProfessions" :options="professions" multiple filled
+                              use-chips dense label="выберите профессию" />
                 </div>
                 <div class="col" style="overflow:auto">
                     <q-scroll-area style="height:100%">
                         <q-list separator>
-                            <q-item clickable v-ripple v-for="s in shops" :key="s.Id" @click="onShopClick(s)"
-                                    @mouseenter="focusedShop=s" @mouseleave="focusedShop=null" :active="focusedShop==s">
+                            <q-item clickable v-ripple v-for="s in shops" :key="s.Id"
+                                    @click="onShopClick(s)" @mouseenter="focusedShop=s"
+                                    @mouseleave="focusedShop=null" :active="focusedShop==s">
                                 <q-item-section>
                                     <q-item-label>{{s.Address}}</q-item-label>
                                 </q-item-section>
@@ -33,6 +34,9 @@
                 <div class="col-auto">
                     center:{{center}}
                     zoom:{{zoom}}
+                    <div>
+                        search:{{searchLocation?searchLocation.Kind:'none'}}
+                    </div>
                 </div>
             </div>
 
@@ -40,41 +44,52 @@
 
         <q-page-container>
             <q-page class="flex flex-center map-wrapper">
-                <l-map class="map" ref="map" :zoom="zoom" :center="center" :min-zoom="6" @ready="onMapInit"
-                       @update:bounds="boundsUpdated" @update:zoom="zoomUpdated" @update:center="centerUpdated"
-                       :options="{wheelPxPerZoomLevel:120}">
+                <l-map class="map" ref="map" :zoom="zoom" :center="center" :min-zoom="6"
+                       @ready="onMapInit" @update:bounds="boundsUpdated" @update:zoom="zoomUpdated"
+                       @update:center="centerUpdated" :options="{wheelPxPerZoomLevel:120}">
                     <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
 
                     <l-marker v-if="focusedShop" :lat-lng="[focusedShop.Lat, focusedShop.Lon]">
                         <l-tooltip :options="{permanent:true}">
                             <div>{{focusedShop.Address}}</div>
-                            <div v-for="(v,i) in focusedShop.vacancies" :key="i">{{v.profession}}</div>
+                            <div v-for="(v,i) in focusedShop.vacancies" :key="i">{{v.profession}}
+                            </div>
                         </l-tooltip>
 
                         <l-icon>
-                            <q-icon class="shop-marker shop-marker--focused" name="place" size="24px" />
+                            <q-icon class="shop-marker shop-marker--focused" name="place"
+                                    size="24px" />
                         </l-icon>
 
                     </l-marker>
 
                     <l-marker-cluster :options="{maxClusterRadius:80}">
-                        <template v-for="s in shops">
-                            <l-marker v-if="s!=focusedShop" :key="s.Id" :lat-lng="[s.Lat, s.Lon]">
-                                <l-tooltip>
-                                    <div>{{s.Address}}</div>
-                                    <div v-for="(v,i) in s.vacancies" :key="i">{{v.profession}}</div>
-                                </l-tooltip>
+                        <l-marker v-for="s in shops" :key="s.Id" :lat-lng="[s.Lat, s.Lon]">
+                            <l-tooltip>
+                                <div>{{s.Address}}</div>
+                                <div v-for="(v,i) in s.vacancies" :key="i">{{v.profession}}
+                                </div>
+                            </l-tooltip>
 
-                                <l-icon>
-                                    <q-icon class="shop-marker" name="place" size="24px" />
-                                </l-icon>
-                            </l-marker>
-                        </template>
+                            <l-icon>
+                                <q-icon class="shop-marker" name="place" size="24px" />
+                            </l-icon>
+                        </l-marker>
                     </l-marker-cluster>
 
-                    <template v-if="searchLocation && searchLocation.Kind=='IAddress'">
-                        <AddressMarker :address="searchLocation" :radius="searchRadius" />
+                    <template v-if="zoom>10">
+                        <AddressMarker v-if="searchLocation && searchLocation.Kind=='IAddress'"
+                                       :address="searchLocation" :radius="searchRadius" />
+
+                        <MetroLineMarker v-if="searchLocation && searchLocation.Kind=='IMetroLine'"
+                                         :metroLine="searchLocation" />
+
+                        <template v-if="metroLines">
+                            <MetroLineMarker v-for="m in metroLines" :key="m.Name" :metroLine="m"
+                                             :opacity="0.5" />
+                        </template>
                     </template>
+
                     <!-- 
                     <template v-if="addressCircle">
                         <l-circle :lat-lng="addressCircle.latlng" color="" fill-color="#42A5F5"

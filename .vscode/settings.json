@@ -19,7 +19,7 @@
     "vetur.format.defaultFormatterOptions": {
         "js-beautify-html": {
             "wrap_attributes": "aligned-multiple",
-            "wrap-line-length": 120
+            "wrap-line-length": 100
         },
         "prettyhtml": {
             "printWidth": 150,

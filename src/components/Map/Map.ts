@@ -1,11 +1,16 @@
 import { Vue, Component, Prop, Emit, Watch } from "vue-property-decorator";
 import { LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline } from 'vue2-leaflet';
-import { Icon, Map, LatLngBounds, LatLngBoundsExpression, Polygon, Circle } from 'leaflet';
+import { Icon, Map, LatLngBounds, LatLngBoundsExpression, Polygon, Circle, LatLng, LatLngExpression } from 'leaflet';
 import { Notify } from 'quasar'
-import { getProfessions, getShopVacancies, getMetroLines } from '@/api';
+import { getProfessions, getShopVacancies } from '@/api';
+import { getMetroLines } from '@/api/search';
+import { getBounds, getCenter } from 'geolib';
+
 import AddressSearch from "../AddressSearch/AddressSearch.vue";
 import Search, { SearchLocation } from "../Search2/";
 import AddressMarker from './components/AddressMarker';
+import MetroLineMarker from './components/MetroLineMarker';
+
 
 const LMarkerCluster = require('vue2-leaflet-markercluster');
 
@@ -22,12 +27,15 @@ Icon.Default.mergeOptions({
 });
 
 
-const components = { AddressSearch, AddressMarker, Search, LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster };
+const components = {
+    AddressSearch, AddressMarker, MetroLineMarker,
+    Search, LMap, LTileLayer, LMarker, LCircleMarker, LIcon, LPolygon, LCircle, LTooltip, LPolyline, LMarkerCluster
+};
 
 @Component({ components })
 export default class MapComponent extends Vue {
     zoom = 13;
-    center: any = { lat: 59.93085, lng: 30.366211 };
+    center = { lat: 59.93085, lng: 30.366211 };
     bounds: LatLngBounds | null = null;
 
     professions: any[] = [];
@@ -55,12 +63,28 @@ export default class MapComponent extends Vue {
 
 
     onSearchSelect(input: SearchLocation) {
-    console.log("TCL: MapComponent -> onSearchSelect -> input", input)
-        
-        if (input && input.Kind == 'IAddress') {
-            this.setMapView([input.GeoPoint.Lat, input.GeoPoint.Lon]);
-        }
         this.searchLocation = input;
+        if (!input) return;
+
+        let center: [number, number] = [0, 0];
+
+        if (input.Kind == 'IAddress') {
+            center = [input.GeoPoint.Lat, input.GeoPoint.Lon]
+        }
+
+        if (input.Kind == 'IMetroStation') {
+            center = [input.GeoPoint.Lat, input.GeoPoint.Lon]
+        }
+
+        if (center[0] > 0 && center[1] > 0)
+            this.setMapView({ center: center });
+
+        if (input.Kind == 'IMetroLine') {
+            const points = input.Stations.map(st => ({ lat: st.GeoPoint.Lat, lon: st.GeoPoint.Lon }));
+            const b = getBounds(points) as { [key: string]: number };
+            this.setMapView({ bounds: { ne: [b.maxLat, b.maxLng], sw: [b.minLat, b.minLng] } })
+        }
+
     }
 
     onAddressSelect(address: any) {
@@ -78,13 +102,12 @@ export default class MapComponent extends Vue {
 
         const coord = [address.GeoPoint.Lat, address.GeoPoint.Lon] as [number, number];
         this.addressCircle = { latlng: coord, radius: 2000 };
-        this.setMapView(coord);
+        this.setMapView({ center: coord });
 
     }
 
     onShopClick(shop: any) {
-        const coord = [shop.Lat, shop.Lon] as [number, number];
-        this.setMapView(coord);
+        this.setMapView({ center: [shop.Lat, shop.Lon] });
     }
 
     onMetroStationClick(station: any, line: any) {
@@ -114,11 +137,8 @@ export default class MapComponent extends Vue {
     @Watch('bounds', { immediate: true })
     async fetchMetroStations() {
         if (this.bounds == null) return;
-        //const nw = this.bounds.getNorthWest();
-        //const se = this.bounds.getSouthEast();
-        //const lines = await getMetroLines({ bounds: [[nw.lat, nw.lng], [se.lat, se.lng]] });
-        //lines.forEach((l: any) => l.points = l.stations.map((st: any) => ([st.lat, st.lng])));
-        //this.metroLines = lines;
+        const lines = await getMetroLines({ Lat: this.center.lat, Lon: this.center.lng }, 20000);
+        this.metroLines = lines;
     }
 
     onMapInit() {
@@ -129,7 +149,7 @@ export default class MapComponent extends Vue {
         this.zoom = zoom;
     }
 
-    centerUpdated(center: LatLngBounds) {
+    centerUpdated(center: LatLng) {
         this.center = center;
     }
 
@@ -137,8 +157,14 @@ export default class MapComponent extends Vue {
         this.bounds = this.map.getBounds();
     }
 
-    setMapView(center: [number, number]) {
+    setMapView(target: { center?: LatLngExpression, bounds?: { sw: LatLngExpression, ne: LatLngExpression } }) {
+        const { center, bounds } = target;
+        if (!center && !bounds) return;
         const zoom = this.zoom < 14 ? 14 : this.zoom;
-        this.map.setView(center, zoom);
+
+        if (center)
+            this.map.setView(center, zoom, { animate: true });
+        if (bounds)
+            this.map.fitBounds(new LatLngBounds(bounds.sw, bounds.ne), { animate: true, padding: [10, 10] });
     }
 }

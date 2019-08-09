@@ -15,11 +15,13 @@ const allLines = metro.reduce((lines, curr: any) => lines.concat(curr.lines), []
     .map((l: any) => {
 
         const line = <IMetroLine>{
+            Kind: "IMetroLine",
             Name: l.name,
             HexColor: l.hex_color
         };
 
         const stations = l.stations.map((s: any) => (<IMetroStation>{
+            Kind: "IMetroStation",
             Name: s.name,
             GeoPoint: { Lat: s.lat, Lon: s.lng },
             Line: line

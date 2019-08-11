@@ -3,7 +3,8 @@
     <q-layout view="lHh Lpr lFf">
         <q-header elevated>
             <q-toolbar>
-                <Search style="width:100%;" @selected="onSearchSelect" :point="center" />
+                <Search style="width:100%;" @selected="onSearchSelect" :point="center"
+                        :metro-lines="metroLines" :vacancies="shopsListItems" />
             </q-toolbar>
         </q-header>
 
@@ -15,7 +16,7 @@
                 </div>
                 <div class="col" style="overflow:auto">
                     <q-scroll-area style="height:100%">
-                        <VacancyList :vacancies="shops" :location="searchLocation"
+                        <VacancyList :vacancies="shopsListItems" :location="searchResult"
                                      :radius="searchRadius" @shop:click="onShopClick"
                                      @shop:mouseenter="focusedShop=$event"
                                      @shop:mouseleave="focusedShop=null" />
@@ -23,10 +24,11 @@
                 </div>
 
                 <div class="col-auto q-px-lg">
+                    {{shops.length}} {{shopsListItems.length}} {{zoom}}
                     <q-badge color="primary">
                         радиус поиска {{ searchRadius }} метров
                     </q-badge>
-                    <q-slider v-model="searchRadius" :min="500" :max="1500" :step="100" />
+                    <q-slider v-model="searchRadius" :min="500" :max="2500" :step="100" />
                 </div>
             </div>
 
@@ -42,7 +44,7 @@
                     <l-marker v-if="focusedShop" :lat-lng="[focusedShop.Lat, focusedShop.Lon]">
                         <l-tooltip :options="{permanent:true}">
                             <div>{{focusedShop.Address}}</div>
-                            <div v-for="(v,i) in focusedShop.vacancies" :key="i">{{v.profession}}
+                            <div v-for="(v,i) in focusedShop.Vacancies" :key="i">{{v.Profession}}
                             </div>
                         </l-tooltip>
 
@@ -54,10 +56,12 @@
                     </l-marker>
 
                     <l-marker-cluster :options="{maxClusterRadius:80}">
-                        <l-marker v-for="s in shops" :key="s.Id" :lat-lng="[s.Lat, s.Lon]">
+                        <l-marker v-for="s in shopsMapItems" :key="s.Id"
+                                  :lat-lng="[s.GeoPoint.Lat, s.GeoPoint.Lon]">
                             <l-tooltip>
-                                <div>{{s.Address}}</div>
-                                <div v-for="(v,i) in s.vacancies" :key="i">{{v.profession}}
+                                <div>{{s.Region}} {{s.Region!=s.Locality?s.Locality:''}}
+                                    {{s.Address}}</div>
+                                <div v-for="(v,i) in s.Vacancies" :key="i">{{v.Profession}}
                                 </div>
                             </l-tooltip>
 
@@ -68,13 +72,14 @@
                     </l-marker-cluster>
 
                     <template v-if="zoom>10">
-                        <AddressMarker v-if="searchLocation && searchLocation.Kind=='IAddress'"
-                                       :address="searchLocation" :radius="searchRadius" />
+                        <AddressMarker v-if="searchResult && searchResult.Kind=='IAddress'"
+                                       :address="searchResult" :radius="searchRadius" />
 
                         <template v-if="metroLines">
                             <MetroLineMarker v-for="m in metroLines" :key="m.Name" :metroLine="m"
                                              @click="onMetroClick" :opacity="isActiveMetro(m)?1:.5"
-                                             :radius="searchRadius" :active="isActiveMetro(m)" />
+                                             :radius="searchRadius" :active="isActiveMetro(m)"
+                                             :stationRadius="zoom>13?4:1" />
                         </template>
                     </template>
 

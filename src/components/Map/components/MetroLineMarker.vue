@@ -9,7 +9,7 @@
         </l-polyline>
 
         <l-layer-group v-for="s in metroLine.Stations" :key="s.Name">
-            <l-circle-marker :radius="4" :lat-lng="[s.GeoPoint.Lat, s.GeoPoint.Lon]" :fill="true"
+            <l-circle-marker :radius="stationRadius" :lat-lng="[s.GeoPoint.Lat, s.GeoPoint.Lon]" :fill="true"
                              :color="color" :opacity="opacity*0.8" :fill-color="color"
                              :fill-opacity="opacity*0.8" @click="emitClick(s)">
                 <l-tooltip>

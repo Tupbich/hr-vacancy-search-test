@@ -1,22 +1,25 @@
 import { Vue, Component, Prop, Emit } from "vue-property-decorator";
-import { SearchLocation } from '../LocationSearch';
+import { SearchResult } from '../Search';
 import { IGeoPoint, IShopVacancy } from '@/models';
 import { isPointWithinRadius, getDistance } from 'geolib';
+import VacancyGroupComponent from './VacancyGroup.vue';
+import VacancyComponent from './Vacancy.vue';
 
-declare type VacanciesGroup = {
+
+export type VacancyGroup = {
     text: string;
     items: IShopVacancy[],
     caption?: string,
-    childs?: VacanciesGroup[]
+    childs?: VacancyGroup[],
+    highlight?: boolean;
 }
 
 
-@Component
+@Component({ components: { VacancyGroupComponent, VacancyComponent } })
 export default class VacancyListComponent extends Vue {
 
-
     @Prop()
-    location?: SearchLocation;
+    location?: SearchResult;
 
     @Prop()
     profession?: string;
@@ -27,18 +30,47 @@ export default class VacancyListComponent extends Vue {
     @Prop({ default: [] })
     vacancies!: IShopVacancy[];
 
-    get highlightGroupText() {
-        if (!this.location) return null;
-        if (this.location.Kind == 'IMetroStation') return this.location.Name;
-        return null;
-    }
+    get groups(): VacancyGroup[] | null {
+        let groups: VacancyGroup[] = [];
 
-    get groups(): VacanciesGroup[] | null {
+        if (!this.location) {
+            const regions = new Set(this.vacancies.map(x => x.Region));
+            const locations = new Set(this.vacancies.map(x => x.Locality));
 
-        if (!this.location)
-            return null;
+            if (regions.size == 1 || locations.size == 1)
+                return null;
 
-        let groups: VacanciesGroup[] = [];
+            const grouped: { [key: string]: { [key: string]: IShopVacancy[] } } = {};
+
+            this.vacancies.forEach(v => {
+                if (!(v.Region in grouped))
+                    grouped[v.Region] = {};
+
+                const regionEntry = grouped[v.Region];
+                if (!(v.Locality in regionEntry))
+                    regionEntry[v.Locality] = [];
+
+                const localityEntry = regionEntry[v.Locality];
+                localityEntry.push(v);
+            });
+
+
+            for (const region in grouped) {
+                const regionEntry = grouped[region];
+                const regionGroup: VacancyGroup = { text: region, items: [], childs: [] };
+                groups.push(regionGroup);
+
+
+                for (const locality in regionEntry) {
+                    const vacancies = regionEntry[locality];
+                    const localityGroup: VacancyGroup = { text: locality, items: vacancies };
+                    regionGroup.childs!.push(localityGroup);
+                }
+            }
+
+            return groups;
+        }
+
 
         if (this.location.Kind == 'IAddress') {
             const center = this.location.GeoPoint;
@@ -56,20 +88,28 @@ export default class VacancyListComponent extends Vue {
             groups = this.location.Stations.map(st => {
                 const center = st.GeoPoint;
                 let nearest = this.vacancies.filter(x => this.vacancyInRadus(x, center));
-                return { text: st.Name, items: nearest }
+                return {
+                    text: st.Name,
+                    items: nearest,
+
+                }
             });
         }
 
         if (this.location.Kind == 'IMetroStation') {
+            const name = this.location.Name;
             groups = this.location.Line.Stations.map(st => {
                 const center = st.GeoPoint;
                 let nearest = this.vacancies.filter(x => this.vacancyInRadus(x, center));
-                return { text: st.Name, items: nearest }
+                return {
+                    text: st.Name,
+                    items: nearest,
+                    highlight: st.Name == name
+                }
             });
         }
 
-
-        return groups;
+        return groups.length ? groups : null;
     }
 
     vacancyInRadus(v: IShopVacancy, center: IGeoPoint) {

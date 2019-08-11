@@ -18,6 +18,9 @@ export default class MetroLineMarkerComponent extends Vue {
     @Prop()
     radius!: number;
 
+    @Prop({ default: 3 })
+    stationRadius!: number;
+
     get color() {
         return '#' + this.metroLine.HexColor;
     }

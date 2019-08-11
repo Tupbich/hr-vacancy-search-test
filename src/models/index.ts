@@ -9,6 +9,9 @@ export interface IHasGeo {
 
 export interface IShopVacancy extends IHasGeo {
     Id: number;
+    Kind: "IShopVacancy";
+    Region: string;
+    Locality: string;
     Address: string;
     Vacancies: IVacancy[];
 }

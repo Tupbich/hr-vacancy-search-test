@@ -4,7 +4,7 @@ import { Icon, Map, LatLngBounds, LatLngBoundsExpression, Polygon, Circle, LatLn
 import { getProfessions, getShopVacancies } from '@/api';
 import { getMetroLines } from '@/api/search';
 import { getBounds, getCenter, getBoundsOfDistance } from 'geolib';
-import Search, { SearchLocation } from "../LocationSearch";
+import Search, { SearchResult } from "../Search";
 import AddressMarker from './components/AddressMarker';
 import MetroLineMarker from './components/MetroLineMarker';
 import VacancyList from '../VacancySearch/VacancyList';
@@ -15,7 +15,7 @@ const LMarkerCluster = require('vue2-leaflet-markercluster');
 import 'leaflet/dist/leaflet.css';
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import { IMetroLine, IMetroStation, IShopVacancy } from '@/models';
+import { IMetroLine, IMetroStation, IShopVacancy, IVacancy } from '@/models';
 
 delete (Icon.Default.prototype as any)._getIconUrl;
 Icon.Default.mergeOptions({
@@ -39,19 +39,20 @@ export default class MapComponent extends Vue {
     professions: any[] = [];
     selectedProfessions: any[] = [];
 
-    shops: any[] = [];
+    shops: IShopVacancy[] = [];
     focusedShop: any = null;
 
-    addressCircle: any = null;
+    // addressCircle: any = null;
 
     searchRadius = 1000;
-    searchLocation: SearchLocation = null;
-
+    searchResult: SearchResult = null;
     metroLines: IMetroLine[] = [];
 
 
     async created() {
         this.professions = await getProfessions();
+        await this.fetchVacancies();
+        await this.fetchMetroStations();
     }
 
     get map() {
@@ -65,16 +66,33 @@ export default class MapComponent extends Vue {
         //const sw = [b[0].latitude, b[0].longitude] as [number, number];
         //const ne = [b[1].latitude, b[1].longitude] as [number, number];
 
-        return this.bounds.pad(5);
+        return this.bounds.pad(.5);
     }
 
-    onSearchSelect(input: SearchLocation) {
-        this.searchLocation = input;
+    get shopsListItems(): IShopVacancy[] {
+        if (this.zoom < 11 || !this.fetchBounds)
+            return this.shops;
+        return this.shops.filter(s => this.fetchBounds!.contains([s.GeoPoint.Lat, s.GeoPoint.Lon]));
+    }
+
+    get shopsMapItems(): IShopVacancy[] {
+        if (!this.bounds) return [];
+        const bounds = this.bounds!.pad(.5);
+        return this.shopsListItems.filter(s => bounds.contains([s.GeoPoint.Lat, s.GeoPoint.Lon]));
+    }
+
+    onSearchSelect(input: SearchResult) {
+        this.searchResult = input;
         if (!input) return;
 
         let center: [number, number] = [0, 0];
 
         if (input.Kind == 'IAddress') {
+            center = [input.GeoPoint.Lat, input.GeoPoint.Lon]
+        }
+
+        if (input.Kind == 'IShopVacancy') {
+            this.focusedShop = input;
             center = [input.GeoPoint.Lat, input.GeoPoint.Lon]
         }
 
@@ -94,7 +112,6 @@ export default class MapComponent extends Vue {
     }
 
     onShopClick(shop: IShopVacancy) {
-        console.log("TCL: MapComponent -> onShopClick -> shop", shop)
 
         this.setMapView({ center: [shop.GeoPoint.Lat, shop.GeoPoint.Lon] });
     }
@@ -104,25 +121,24 @@ export default class MapComponent extends Vue {
     }
 
 
-    @Watch('fetchBounds', { immediate: true })
+    // @Watch('fetchBounds', { immediate: true })
     @Watch('selectedProfessions', { immediate: false })
     async fetchVacancies() {
 
-        let bounds = this.fetchBounds;
-        if (bounds == null) return;
+        // let bounds = this.fetchBounds;
+        // if (bounds == null) return;
 
-        
-        const nw = bounds.getNorthWest();
-        const se = bounds.getSouthEast();
 
-        let shops = await getShopVacancies({
-            bounds: [[nw.lat, nw.lng], [se.lat, se.lng]],
+        // const nw = bounds.getNorthWest();
+        // const se = bounds.getSouthEast();
+
+        this.shops = await getShopVacancies({
+            //bounds: [[nw.lat, nw.lng], [se.lat, se.lng]],
             professions: this.selectedProfessions
         });
-
         //const center = this.bounds.getCenter();
         //shops = shops.sort((a, b) => center.distanceTo([a.Lat, a.Lon]) - center.distanceTo([b.Lat, b.Lon]));
-        this.shops = shops;
+
     }
 
     @Watch('fetchBounds', { immediate: true })
@@ -133,7 +149,7 @@ export default class MapComponent extends Vue {
     }
 
     isActiveMetro(m: IMetroLine) {
-        const loc = this.searchLocation;
+        const loc = this.searchResult;
         if (!loc) return false;
         if (loc.Kind == 'IMetroLine') return loc.Name == m.Name;
         if (loc.Kind == 'IMetroStation') return loc.Line.Name == m.Name;

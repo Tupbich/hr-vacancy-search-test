@@ -4,6 +4,7 @@ import metro from './data_mock/metro_stations';
 import { isPointWithinRadius } from 'geolib';
 
 import { Bounds } from 'leaflet';
+import { IShopVacancy } from '@/models';
 
 // tslint:disable-next-line: typedef
 const dadata = axios.create({
@@ -48,24 +49,26 @@ export async function getCoords(address: string) {
 }
 
 export async function getProfessions() {
-    let allProfessions = allShops.reduce((professions, shop) => professions.concat((shop as any).vacancies.map((v: any) => v.profession)), [] as any[]);
+    let allProfessions = allShops.reduce((professions, shop) => professions.concat((shop as any).Vacancies.map((v: any) => v.Profession)), [] as any[]);
     const professions = Array.from(new Set(allProfessions));
     return professions;
 }
 
-export async function getShopVacancies(search: { bounds: [[number, number], [number, number]], professions?: string[] }) {
-    if (!search.bounds) return [];
+export async function getShopVacancies(search: { bounds?: [[number, number], [number, number]], professions?: string[] }) {
 
-    let shops = (allShops as any[]).filter(s => s.vacancies.length);
-    const bounds = new Bounds(search.bounds);
+    let shops = (allShops as any[]).filter(s => s.Vacancies.length);
 
     if (search.professions && search.professions.length) {
-        shops = shops.filter(s => s.vacancies.some((v: any) => search.professions!.some(sp => sp == v.profession)));
+        shops = shops.filter(s => s.Vacancies.some((v: any) => search.professions!.some(sp => sp == v.Profession)));
     }
 
-    shops = shops.filter(s => bounds.contains([s.Lat, s.Lon]));
+    if (search.bounds) {
+        const bounds = new Bounds(search.bounds);
+        shops = shops.filter(s => bounds.contains([s.Lat, s.Lon]));
+    }
+
     shops.forEach(s => {
-        s.Vacancies = s.vacancies;
+        //s.Vacancies = s.vacancies;
         s.GeoPoint = { Lat: s.Lat, Lon: s.Lon };
     })
 

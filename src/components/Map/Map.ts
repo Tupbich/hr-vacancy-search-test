@@ -62,6 +62,11 @@ export default class MapComponent extends Vue {
 
     get fetchBounds(): LatLngBounds | null {
         if (!this.bounds) return null;
+
+        // TODO расширять границы в зависимости от типа объекта поиска, а конкретнее для метро выдавать всю ветку в рамках радиуса поиска
+
+
+
         //const b = getBoundsOfDistance({ lat: this.center.lat, lon: this.center.lng }, 30000);
         //const sw = [b[0].latitude, b[0].longitude] as [number, number];
         //const ne = [b[1].latitude, b[1].longitude] as [number, number];
@@ -72,6 +77,7 @@ export default class MapComponent extends Vue {
     get shopsListItems(): IShopVacancy[] {
         if (this.zoom < 11 || !this.fetchBounds)
             return this.shops;
+        // TODO фильтровать сначала по гео, затем в фильтр добавлять все магазины с соответствующим регионом или городом 
         return this.shops.filter(s => this.fetchBounds!.contains([s.GeoPoint.Lat, s.GeoPoint.Lon]));
     }
 

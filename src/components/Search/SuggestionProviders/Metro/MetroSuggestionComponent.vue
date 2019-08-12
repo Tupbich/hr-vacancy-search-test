@@ -1,5 +1,5 @@
 <template>
-    <q-item @click="emitSelect(suggestion)">
+    <q-item @click="emitSelect(suggestion)" clickable>
         <q-item-label>
             <q-item-label>
                 <q-icon name="subway" size="22px" :class="{'text-accent': suggestion.isMatch}"

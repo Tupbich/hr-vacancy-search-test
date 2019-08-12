@@ -30,6 +30,22 @@ export default class VacancyListComponent extends Vue {
     @Prop({ default: [] })
     vacancies!: IShopVacancy[];
 
+    get title(): string {
+        const loc = this.location;
+        if (!loc) return '';
+
+        switch (loc.Kind) {
+            case 'IAddress':
+                return 'адрес ' + loc.Name;
+            case 'IMetroLine':
+                return 'линия метро ' + loc.Name;
+            case 'IMetroStation':
+                return 'линия метро ' + loc.Line.Name + ', станция ' + loc.Name;
+            default:
+                return '';
+        }
+    }
+
     get groups(): VacancyGroup[] | null {
         let groups: VacancyGroup[] = [];
 

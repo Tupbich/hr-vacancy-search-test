@@ -24,7 +24,7 @@
                 </div>
 
                 <div class="col-auto q-px-lg">
-                    {{shops.length}} {{shopsListItems.length}} {{zoom}}
+                    <!-- {{shops.length}} {{shopsListItems.length}} {{zoom}} -->
                     <q-badge color="primary">
                         радиус поиска {{ searchRadius }} метров
                     </q-badge>
@@ -39,7 +39,7 @@
                 <l-map class="map" ref="map" :zoom="zoom" :center="center" :min-zoom="6"
                        @ready="onMapInit" @update:bounds="boundsUpdated" @update:zoom="zoomUpdated"
                        @update:center="centerUpdated" :options="{wheelPxPerZoomLevel:120}">
-                    <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
+                    <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
                     <l-marker v-if="focusedShop" :lat-lng="[focusedShop.Lat, focusedShop.Lon]">
                         <l-tooltip :options="{permanent:true}">

@@ -1,5 +1,10 @@
 <template>
     <q-list separator>
+        <q-item v-if="title">
+            <q-item-section>
+                {{title}}
+            </q-item-section>
+        </q-item>
         <template v-if="groups">
             <VacancyGroupComponent v-for="(g,i) in groups" :key="i" :group="g"
                                    @shop:click="onShopClick" @shop:mouseenter="onShopMouseEnter"

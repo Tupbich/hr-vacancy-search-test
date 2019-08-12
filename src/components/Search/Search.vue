@@ -4,7 +4,7 @@
                  :debounce="debounce" @input="onInput" spellcheck="false" @focus="onFocus"
                  @blur="onBlur" @click="onClick" @keyup.esc="reset">
             <template v-slot:prepend>
-                <q-btn :icon="currentProvider?currentProvider.icon:'search'"
+                <q-btn :icon="currentProvider?currentProvider.icon:'search'" @click.stop="noop"
                        :icon-right="modeMenuShoving?'keyboard_arrow_up':'keyboard_arrow_down'"
                        rounded flat dense>
                     <q-menu v-model="modeMenuShoving" anchor="bottom left" self="top left"
@@ -13,11 +13,11 @@
                             transition-hide="jump-up">
                         <div class="column">
                             <q-btn dense round class="bg-primary q-mb-xs" v-for="(p,i) in providers"
-                                   :key="i" @click="currentProvider=p">
+                                   :key="i" @click="setProvider(p)">
                                 <q-icon class="text-white" :name="p.icon" />
                             </q-btn>
                             <q-btn dense round class="bg-primary q-mb-xs"
-                                   @click="currentProvider=null">
+                                   @click="setProvider(null)">
                                 <q-icon class="text-white" name="search" />
                             </q-btn>
 
@@ -37,8 +37,7 @@
                 ref="suggestionsMenu">
             <q-list v-if="currentProvider!=null">
                 <component :is="currentProvider.renderComponent" v-for="(s,i) in suggestions"
-                           :key="i" :input="input" :suggestion="s"
-                           @select="onSuggestionSelect" />
+                           :key="i" :input="input" :suggestion="s" @select="onSuggestionSelect" />
             </q-list>
         </q-menu>
 

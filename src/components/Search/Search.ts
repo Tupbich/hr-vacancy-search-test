@@ -100,6 +100,11 @@ export default class SearchComponent extends Vue {
         return provider;
     }
 
+    setProvider(p: ISuggestionProvider | null) {
+        if (p != this.currentProvider) this.reset();
+        this.currentProvider = p;
+    }
+
     reset() {
         this.input = '';
         this.suggestions = [];
@@ -123,4 +128,5 @@ export default class SearchComponent extends Vue {
         this.suggestionsMenu.show();
     }
 
+    noop() { }
 }

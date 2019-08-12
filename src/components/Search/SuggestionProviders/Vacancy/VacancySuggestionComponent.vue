@@ -1,9 +1,8 @@
 <template>
     <q-item @click="emitSelect(suggestion)" clickable>
         <q-item-section>
-            <q-item-label>
-                <q-icon name="person_outline" size="22px"
-                        :class="{'text-accent': suggestion.isMatch}" />
+            <q-item-label :class="{'text-accent': suggestion.isMatch}">
+                <q-icon name="person_outline" size="22px" />
                 {{ suggestion.text }}
             </q-item-label>
             <q-item-label caption v-if="suggestion.childs">

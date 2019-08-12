@@ -1,4 +1,4 @@
 export const icludesToken = (str: string, search: string) => {
-    const tokens = search.toLocaleLowerCase().split(' ');
-    return tokens.every(t => str.toLocaleLowerCase().includes(t));
+    const tokens = search.toLocaleLowerCase().split(/\s/);
+    return tokens.some(t => str.toLocaleLowerCase().includes(t));
 }

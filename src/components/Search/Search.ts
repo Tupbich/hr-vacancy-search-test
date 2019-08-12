@@ -1,6 +1,6 @@
 import { Vue, Component, Prop, Emit, Watch } from "vue-property-decorator";
 import { IAddress, IMetroLine, IMetroStation, IShopVacancy } from '@/models';
-import { QMenu } from 'quasar';
+import { QMenu, QInput } from 'quasar';
 import { ISuggestionProvider, Suggestion } from './index';
 import { AddressSuggestionProvider, VacancySuggestionProvider, MetroSuggestionProvider } from './SuggestionProviders';
 
@@ -44,6 +44,10 @@ export default class SearchComponent extends Vue {
 
     get suggestionsMenu(): QMenu {
         return this.$refs.suggestionsMenu as QMenu;
+    }
+
+    get inputField(): QInput {
+        return this.$refs.input as QInput;
     }
 
     async onInput() {
@@ -128,5 +132,7 @@ export default class SearchComponent extends Vue {
         this.suggestionsMenu.show();
     }
 
-    noop() { }
+    noop(e: MouseEvent) {
+        return false;
+    }
 }

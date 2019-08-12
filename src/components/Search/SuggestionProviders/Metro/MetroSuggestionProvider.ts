@@ -5,6 +5,7 @@ import MetroSuggestionComponent from './MetroSuggestionComponent.vue';
 
 export class MetroSuggestionProvider implements ISuggestionProvider {
     icon = 'subway';
+    description = "по линиям и станциям метро";
     renderComponent = MetroSuggestionComponent;
     metroLinesFunc: () => IMetroLine[];
 

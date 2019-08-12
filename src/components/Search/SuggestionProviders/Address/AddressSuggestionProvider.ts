@@ -4,6 +4,7 @@ import AddressSuggestionComponent from './AddressSuggestionComponent.vue';
 
 export class AddressSuggestionProvider implements ISuggestionProvider {
     icon = 'map';
+    description = "по адресу";
     renderComponent = AddressSuggestionComponent;
 
     isMatchByInput(input: string) {

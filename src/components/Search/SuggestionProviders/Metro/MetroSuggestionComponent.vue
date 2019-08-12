@@ -2,9 +2,10 @@
     <q-item @click="emitSelect(suggestion)" clickable>
         <q-item-label>
             <q-item-label>
-                <q-icon name="subway" size="22px" :class="{'text-accent': suggestion.isMatch}"
-                        :style="{'color': '#'+suggestion.obj.HexColor}" />
-                линия {{ suggestion.text }}
+                <q-icon name="subway" size="22px" :style="{'color': '#'+suggestion.obj.HexColor}" />
+                <span :class="{'text-accent': suggestion.isMatch}">
+                    линия {{ suggestion.text }}
+                </span>
             </q-item-label>
             <q-item-label caption v-if="suggestion.childs">
                 станции:

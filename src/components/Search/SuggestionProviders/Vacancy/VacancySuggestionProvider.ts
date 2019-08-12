@@ -5,6 +5,7 @@ import VacancySuggestionComponent from './VacancySuggestionComponent.vue'
 
 export class VacancySuggestionProvider implements ISuggestionProvider {
     icon = 'person_outline';
+    description = "по вакансиям";
     vacanciesFunc: () => IShopVacancy[];
     renderComponent = VacancySuggestionComponent;
 
@@ -17,7 +18,7 @@ export class VacancySuggestionProvider implements ISuggestionProvider {
 
     async getSuggestions(input: string) {
         input = input.replace(/^в\s/, '');
-
+        
         const suggestions = this.vacanciesFunc().map(v => ({
             text: v.Address,
             obj: v,

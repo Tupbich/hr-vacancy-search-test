@@ -78,8 +78,9 @@
                         <template v-if="metroLines">
                             <MetroLineMarker v-for="m in metroLines" :key="m.Name" :metroLine="m"
                                              @click="onMetroClick" :opacity="isActiveMetro(m)?1:.5"
-                                             :radius="searchRadius" :active="isActiveMetro(m)"
-                                             :stationRadius="zoom>13?4:1" />
+                                             :weight="isActiveMetro(m)?7:4" :radius="searchRadius"
+                                             :active="isActiveMetro(m)"
+                                             :stationRadius="zoom<=13?1:isActiveMetro(m)?7:4" />
                         </template>
                     </template>
 

@@ -1,7 +1,7 @@
 <template>
     <l-layer-group>
 
-        <l-polyline :lat-lngs="points" :color="color" :smooth-factor="0.5" :weight="4"
+        <l-polyline :lat-lngs="points" :color="color" :smooth-factor="0.5" :weight="weight"
                     :opacity="opacity*0.8" @click="emitClick(metroLine)">
             <l-tooltip :options="{sticky:true}">
                 <div>линия: {{metroLine.Name}}</div>

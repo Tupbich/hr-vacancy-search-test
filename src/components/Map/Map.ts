@@ -7,7 +7,7 @@ import { getBounds, getCenter, getBoundsOfDistance } from 'geolib';
 import Search, { SearchResult } from "../Search";
 import AddressMarker from './components/AddressMarker';
 import MetroLineMarker from './components/MetroLineMarker';
-import VacancyList from '../VacancySearch/VacancyList';
+import VacancyList from '../Vacancies/VacancyList';
 
 
 const LMarkerCluster = require('vue2-leaflet-markercluster');
@@ -75,10 +75,19 @@ export default class MapComponent extends Vue {
     }
 
     get shopsListItems(): IShopVacancy[] {
-        if (this.zoom < 11 || !this.fetchBounds)
+        if (this.zoom < 11 || !this.bounds)
             return this.shops;
-        // TODO фильтровать сначала по гео, затем в фильтр добавлять все магазины с соответствующим регионом или городом 
-        return this.shops.filter(s => this.fetchBounds!.contains([s.GeoPoint.Lat, s.GeoPoint.Lon]));
+        
+        const shopsInBounds = this.shops.filter(s => this.bounds!.contains([s.GeoPoint.Lat, s.GeoPoint.Lon]));
+        const regionsAndLocalties = shopsInBounds
+            .reduce((keys, el) => {
+                if (!keys[el.Region])
+                    keys[el.Region] = [];
+                keys[el.Region].push(el.Locality);
+                return keys;
+            }, {} as { [key: string]: string[] })
+
+        return this.shops.filter(s => regionsAndLocalties[s.Region] && regionsAndLocalties[s.Region].includes(s.Locality));
     }
 
     get shopsMapItems(): IShopVacancy[] {

@@ -70,7 +70,6 @@ export default class VacancyListComponent extends Vue {
                 localityEntry.push(v);
             });
 
-
             for (const region in grouped) {
                 const regionEntry = grouped[region];
                 const regionGroup: VacancyGroup = { text: region, items: [], childs: [] };
@@ -83,7 +82,6 @@ export default class VacancyListComponent extends Vue {
                     regionGroup.childs!.push(localityGroup);
                 }
             }
-
             return groups;
         }
 
@@ -107,7 +105,6 @@ export default class VacancyListComponent extends Vue {
                 return {
                     text: st.Name,
                     items: nearest,
-
                 }
             });
         }
@@ -124,7 +121,6 @@ export default class VacancyListComponent extends Vue {
                 }
             });
         }
-
         return groups.length ? groups : null;
     }
 

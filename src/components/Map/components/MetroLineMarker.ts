@@ -12,6 +12,9 @@ export default class MetroLineMarkerComponent extends Vue {
     @Prop({ default: 1 })
     opacity!: number;
 
+    @Prop({ default: 3 })
+    weight!: number;
+
     @Prop()
     active!: boolean;
 
